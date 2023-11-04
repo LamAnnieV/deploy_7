@@ -1,19 +1,18 @@
-# Deploy Banking Application across two Regions with a Jenkins Agent Infrastructure using Terraform 
+# Deploy Banking Application in Elastic Container Service 
 
-October 28, 2023
+November 4, 2023
 
 By:  Annie V Lam - Kura Labs
 
 # Purpose
 
-Use Jenkins agent to spin up the main infrastructure and deploy the banking application to for instances.
+Deploy Banking Application in ECS Container 
 
-Previously, we built and tested the application on one server before the Jenkins agent SSHed into a second server to deploy the application.  For this deployment, a Jenkins agent uses Terraform init, plan, and apply the main infrastructure.  In addition, deploy the application.
+Previously, Jenkins agent infrastructure was used to apply Terraform .tf files that would create the main infrastructure that would deploy the banking application in four public subnets.  In addition, an RDS was configured to synchronize the databases across all four subnets.  In this deployment, Elastic Container Services with a docker image was used to deploy the banking application.  
 
 ## Step #1 Diagram the VPC Infrastructure and the CI/CD Pipeline
 
 ![Deployment Diagram](Images/Deployment_Pipeline.png)
-
 
 ## Step #2 GitHub/Git
 
@@ -25,75 +24,25 @@ In order for the EC2 instance, where Jenkins is installed, to access the reposit
 
 [Generate GitHub Token](https://github.com/LamAnnieV/GitHub/blob/main/Generate_GitHub_Token.md)
 
+Update files in the GitHub repository using [git](Images/git.md)
 
-**GIT - Jenkins Agent Infrastructure**
+## Step #3 Dockerfile
 
-```
-git clone https://github.com/kura-labs-org/LamAnnieV/deploy_6.git
-cd deploy_6/
-git init
-git branch second
-git switch second
-# Make a new directory jenkinsTerraform
-git add jenkinsTerraform
-# Create files main.tf, terraform.tfvars, variables.tf, installs1.sh, installs2.sh
-terraform init
-terraform validate
-terraform plan
-terraform apply
-# After the successful creation of the Jenkins Agent infrastructure
-git add main.tf terraform.tfvars variables.tf installs1.sh installs2.sh
-git commit -a
-#make a file .gitignore and put all the names of the files for git to ignore
-git push --set-upstream origin second
-git switch main
-git merge second
-git push --all
-```
+A Docker image is a template of an application with all the dependencies it needs to run. A docker file has all the components to build the Docker image.
 
-**GIT - update DATABASE_URL**
+For this deployment, we need to create a [dockerfile](dockerfile) to build the image of the banking application.  Please see the [GIT - docker file](Images/git.md) section to see how to test the dockerfile to see if it can build the image and if the image is deployable.
 
-```
-git switch second
-# For the files app.py, database.py, load_data.py update the database endpoint see step #4 below
-git commit -a
-git switch main
-git merge second
-git push --all
-```
-
-**GIT - Banking Application Infrastructure**
-
-```
-git switch second
-#Run Jenkins build
-git switch main
-# In the directory "initTerraform", create files main.tf, terraform.tfvars, variables.tf, and deploy.sh
-terraform init
-terraform validate
-terraform plan
-terraform apply
-#After the successful creation of the Application Infrastructure
-terraform destroy
-git add main.tf terraform.tfvars variables.tf deploy.sh
-git commit -a
-#make a file .gitignore and put all the names of the files for git to ignore
-git switch main
-git merge second
-git push --all
-```
-
-## Step #3 Jenkins
+## Step #4 Jenkins
 
 **Jenkins**
 
-Jenkins is used to automate the Build, Test, and Deploy the Banking Application.  To use Jenkins in a new EC2, all the proper installs to use Jenkins and to read the programming language that the application is written in need to be installed. In this case, they are Jenkins, Java, and Jenkins' additional plugin "Pipeline Keep Running Step", which is manually installed through the GUI interface.
+Jenkins automates the Build, Test, and Deploy the Banking Application.  To use Jenkins in a new EC2, all the proper installs to use Jenkins and to read the programming language that the application is written in need to be installed. In this case, they are Jenkins, Java, and Jenkins' additional plugin "Pipeline Keep Running Step", which is manually installed through the GUI interface.
 
 **Jenkins Agent Infrastructure**
 
-Use Terraform to spin up the [Jenkins Agent Infrastructure](jenkinsTerraform/main.tf) to include the installs needed for the [Jenkins instance](jenkinsTerraform/installs1.sh) and the install needed for the [Jenkins agent instance](jenkinsTerraform/installs2.sh), which includes Terraform.
+Use Terraform to spin up the [Jenkins Agent Infrastructure](jenkinsTerraform/main.tf) to include the installs needed for the [Jenkins instance](jenkinsTerraform/installs1.sh), the install needed for the [Jenkins Docker agent instance](jenkinsTerraform/installs2.sh), and the install needed for the [Jenkins Terraform agent instance](jenkinsTerraform/installs3.sh),.
 
-**Setup Jenkins and Jenkins node**
+**Setup Jenkins and Jenkins nodes**
 
 [Create](https://github.com/LamAnnieV/Create_EC2_Instance/blob/main/Create_Key_Pair.md) a Key Pair
 
@@ -103,10 +52,14 @@ Instructions on how to configure the [Jenkin node](https://github.com/LamAnnieV/
 
 Instructions on how to configure [AWS access and secret keys](https://github.com/LamAnnieV/Jenkins/blob/main/AWS_Access_Keys), that the Jenkin node will need to execute Terraform scripts
 
+Instructions on how to configure [Docker credentials](https://github.com/LamAnnieV/Jenkins/blob/main/docker_credentials.md), to push the docker image to Docker Hub
+
 Instructions on how to install the [Pipleline Keep Running Step](https://github.com/LamAnnieV/Jenkins/blob/main/Install_Pipeline_Keep_Running_Step.md)
 
+Instructions on how to install the [Docker Pipeline](https://github.com/LamAnnieV/Jenkins/blob/main/Install_Docker_Pipeline_Plugin.md)
 
-## Step #4 Configure Amazon's Relational Database Service (RDS) 
+
+## Step #5 Configure Amazon's Relational Database Service (RDS) 
 
 RDS is used to manage the MySQL database in all four instances in this case.  It can automate backups and sync the data across regions, availability zones, and instances.  It also ensures security and reliability
 
@@ -121,19 +74,43 @@ Update the section in yellow, green, and blue of the Database endpoint in the fo
 ![Images](Images/DB_name.png)
 
 
-## Step #5 Use Jenkins Agent to execute the Terraform scripts to create the Banking Application Infrastructure
+## Step #6 Use Jenkins Terraform Agent to execute the Terraform scripts to create the Banking Application Infrastructure and Deploy the application on ECS with Application Load Balancer
 
-For this application infrastructure, we want:  
+**Banking Application Infrastructure**
+
+Create the following [banking application infrastructure](intTerraform/vpc.tf):  
 
 ```
-For each of the Regions (US-east-1 and US-west-2), we want: 
 1 VPC
-2 Availability Zones
-2 Public Subnets
-2 EC2 Instances
-1 Route Table
-1 Security Group with ports 22 and 8000
+2 Availability Zones (AZ) us-eas-1a and us-east-1b
+2 Public Subnets one in each AZ
+2 Private Subnets one in each AZ
+2 Route Table
+1 Internet Gateway connected to one route table
+1 Nate Gateway with Elastic IP and connected to the other route table
+1 Security Group with port 80
+1 Security Group with port 8000
 ```
+
+**Elastic Container Service (ECS)**
+
+Create the following [Elastic Container Service](intTerraform/main.tf):  
+
+```
+```
+
+**Application Load Balancer (ALB)**
+
+The purpose of an Application Load Balancer (ALB) is to evenly distribute incoming web traffic to multiple servers or instances to ensure that the application remains available, responsive, and efficient. It directs traffic to different servers to prevent overload on any single server. If one server is down, it can redirect traffic to the servers that are still up and running.  This helps improve the performance, availability, and reliability of web applications, making sure users can access them without interruption, even if some servers have issues.
+
+Create the following [Application Load Balancer](intTerraform/ALB.tf):  
+
+```
+```
+
+
+
+
 To automate the construction of the banking application infrastructure, the instance with the Jenkins agent and Terraform will execute the Terraform scripts. The [main.tf](Images/main.tf) and [variables.tf](Imaages/variables.tf) files, define the resources to be created and declare variables. Additionally, Terraform enables the execution of a [deploy.sh](initTerraform/deploy.sh) that  includes installing dependencies and deploying the banking application. 
 
 The portion of the deploy.sh script that would deploy the application:
