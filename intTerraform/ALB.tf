@@ -1,4 +1,4 @@
-############### Target Group ###############
+#Traget Group
 resource "aws_lb_target_group" "bank-app" {
   name        = "D7-bankapp-app"
   port        = 8000
@@ -14,7 +14,7 @@ resource "aws_lb_target_group" "bank-app" {
   depends_on = [aws_alb.bank_app]
 }
 
-############### Application Load Balancer ###############
+#Application Load Balancer
 resource "aws_alb" "bank_app" {
   name               = "D7-bankapp-lb"
   internal           = false

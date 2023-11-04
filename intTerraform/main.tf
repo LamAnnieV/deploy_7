@@ -1,5 +1,3 @@
-############### Provider ###############
-
 provider "aws" {
   access_key = var.aws_access_key
   secret_key = var.aws_secret_key
@@ -7,7 +5,7 @@ provider "aws" {
 
 }
 
-############### Cluster ###############
+# Cluster
 resource "aws_ecs_cluster" "aws-ecs-cluster" {
   name = "D7-bankapp-cluster"
   tags = {
@@ -23,7 +21,7 @@ resource "aws_cloudwatch_log_group" "log-group" {
   }
 }
 
-############### Task Definition ###############
+# Task Definition
 
 resource "aws_ecs_task_definition" "aws-ecs-task" {
   family = "D7-bankapp-task"
@@ -59,7 +57,7 @@ resource "aws_ecs_task_definition" "aws-ecs-task" {
 
 }
 
-############### ECS Service ###############
+# ECS Service
 resource "aws_ecs_service" "aws-ecs-service" {
   name                 = "D7-bankapp-ecs-service"
   cluster              = aws_ecs_cluster.aws-ecs-cluster.id

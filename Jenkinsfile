@@ -1,52 +1,51 @@
 pipeline {
-  agent {label 'awsDeploy2'}
-  environment{
-      DOCKERHUB_CREDENTIALS = credentials('annievlam-dockerhub')
-      }
-   stages {
-     
-    stage ('Test') {
-      agent {label 'awsDeploy2'}
-      steps {
-        sh '''#!/bin/bash
-        python3.7 -m venv test
-        source test/bin/activate
-        pip install pip --upgrade
-        pip install -r requirements.txt
-        pip install mysqlclient
-        pip install pytest
-        py.test --verbose --junit-xml test-reports/results.xml
-        '''
-     }
-
-       post{
-        always {
-          junit 'test-reports/results.xml'
+    agent any
+    stages {
+        stage('Build') {
+            agent { label 'awsDeploy2' }
+            steps {
+                sh '''#!/bin/bash
+                python3.7 -m venv test
+                source test/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
+            }
         }
-       
-      }
-   }
-     
-    stage ('Build') {
-      agent {label 'awsDeploy2'}
-      steps {
-          sh 'docker build -t annievlam/bankapp .'
-    }
-}
-     stage ('Login') {
-        agent {label 'awsDeploy2'}
-        steps {
-          sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-      }
-}
-
-     stage ('Push') {
-        agent {label 'awsDeploy2'}
-        steps {
-            sh 'docker push annievlam/bankapp'
-  }
-     }
-
+        stage('Test') {
+            agent { label 'awsDeploy2' }
+            steps {
+                sh '''#!/bin/bash
+                python3.7 -m venv test
+                source test/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                pip install mysqlclient
+                pip install pytest
+                pytest --verbose --junit-xml test-reports/results.xml
+                '''
+            }
+            post {
+                always {
+                    junit 'test-reports/results.xml'
+                }
+            }
+        }
+        stage('Docker Build') {
+            agent { label 'awsDeploy2' }
+            steps {
+                sh 'docker build -t annievlam/bankapp .'
+            }
+        }
+        stage('Login and Push') {
+            agent { label 'awsDeploy2' }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'annievlam-dockerhub', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW')]) {
+                    sh "echo \$DOCKERHUB_CREDENTIALS_PSW | docker login -u \$DOCKERHUB_CREDENTIALS_USR --password-stdin"
+                    sh 'docker push annievlam/bankapp'
+                }
+            }
+        }
      stage('Init') {
        agent {label 'awsDeploy'}
        steps {
@@ -80,17 +79,8 @@ pipeline {
          }
     }
    }
-//   stage('Destroy') {
-//     agent {label 'awsDeploy'}
-//     steps {
-//           withCredentials([string(credentialsId: 'AWS_ACCESS_KEY', variable: 'aws_access_key'),
-//               string(credentialsId: 'AWS_SECRET_KEY', variable: 'aws_secret_key')]) {
-//                 dir('intTerraform') {
-//                     sh 'terraform destroy -auto-approve -var="aws_access_key=$aws_access_key" -var="aws_secret_key=$aws_secret_key"'
-//                   }
-//           }
-//     }
-// }
 
-  }
+
+        
+    }
 }
