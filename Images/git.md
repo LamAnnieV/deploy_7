@@ -1,7 +1,7 @@
 **GIT - update datapoints**
 
 ```
-https://github.com/LamAnnieV/deploy_7.git
+git clone https://github.com/LamAnnieV/deploy_7.git
 cd deploy_7/
 git init
 git branch second
