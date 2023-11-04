@@ -83,9 +83,9 @@ Create the following [banking application infrastructure](intTerraform/vpc.tf):
 ```
 1 VPC
 2 Availability Zones (AZ) us-eas-1a and us-east-1b
-2 Public Subnets one in each AZ
-2 Private Subnets one in each AZ
-2 Route Table
+2 Public Subnets,  one in each AZ
+2 Private Subnets,  one in each AZ
+2 Route Tables
 1 Internet Gateway connected to one route table
 1 Nate Gateway with Elastic IP and connected to the other route table
 1 Security Group with port 80
@@ -94,9 +94,15 @@ Create the following [banking application infrastructure](intTerraform/vpc.tf):
 
 **Elastic Container Service (ECS)**
 
-Create the following [Elastic Container Service](intTerraform/main.tf):  
+Amazon Elastic Container Service (ECS) is a managed container orchestration service.  It is designed to simplify the deployment, management, and scaling of containerized applications using containers. The primary purpose of ECS with Docker images is to make it easier to run and manage containers in a scalable and reliable manner.
+
+Create the following resource group for [Elastic Container Service](intTerraform/main.tf):  
 
 ```
+aws_ecs_cluster
+aws_cloudwatch_log_group
+aws_ecs_task_definition
+aws_ecs_service
 ```
 
 **Application Load Balancer (ALB)**
@@ -106,18 +112,14 @@ The purpose of an Application Load Balancer (ALB) is to evenly distribute incomi
 Create the following [Application Load Balancer](intTerraform/ALB.tf):  
 
 ```
+aws_lb_target_group
+Load Balancer Target Group which depends on the Application Load Balancer with port 8000
+aws_alb" "bank_app
+aws_alb_listener
+
 ```
 
-
-
-
-To automate the construction of the banking application infrastructure, the instance with the Jenkins agent and Terraform will execute the Terraform scripts. The [main.tf](Images/main.tf) and [variables.tf](Imaages/variables.tf) files, define the resources to be created and declare variables. Additionally, Terraform enables the execution of a [deploy.sh](initTerraform/deploy.sh) that  includes installing dependencies and deploying the banking application. 
-
-The portion of the deploy.sh script that would deploy the application:
-
-![image](Images/Deploy_script.png)
-
-Jenkins Build:  In Jenkins create a build "deploy_6" to run the file Jenkinsfilev for the Banking application from GitHub Repository [https://github.com/LamAnnieV/deploy_6.git](https://github.com/LamAnnieV/deploy_6.git) and run the build.  This build consists of:  The "Build", the "Test", the "Clean", (Terraform) "Init", (Terraform) "Plan", and (Terraform) "Apply" stages.  The "Apply" stage also includes deploying the application.   
+Jenkins Build:  In Jenkins create a build "deploy_7" to run the file Jenkinsfilev for the Banking application from GitHub Repository [https://github.com/LamAnnieV/deploy_7.git](https://github.com/LamAnnieV/deploy_7.git) and run the build.  This build consists of the "Test", the "Docker Build", "Login and Push", (Terraform) "Init", (Terraform) "Plan", and (Terraform) "Apply" stages.  
 
 **Results:**
 
@@ -127,46 +129,19 @@ Success Build for all Stages
 
 The application was launched from all four instances:
 
-![Images](Images/Launch_1.png)
-![Images](Images/Launch_2.png)
-![Images](Images/Launch_3.png)
-![Images](Images/Launch_4.png)
+![Images](Images/Launched_website.png)
 
-## Step #6 Configure Application Load Balancer to distribute the workload
 
-The purpose of an Application Load Balancer (ALB) is to evenly distribute incoming web traffic to multiple servers or instances to ensure that the application remains available, responsive, and efficient. It directs traffic to different servers to prevent overload on any single server. If one server is down, it can redirect traffic to the servers that are still up and running.  This helps improve the performance, availability, and reliability of web applications, making sure users can access them without interruption, even if some servers have issues.
-
-How to configure [Application Load Balancer](https://github.com/LamAnnieV/AWS_Services/blob/main/Application_Load_Balancer.md)
-
-![Images](Images/Load_Balancer_East.png)
-
-![Images](Images/Load_Balancer_West.png)
-
-## Step #7 Configure Amazon Route 53 DNS Service
-
-Amazon Route 53 is a scalable and highly available Domain Name System (DNS) web service provided by Amazon Web Services (AWS). It allows you to register domain names and manage their settings.  It efficiently routes incoming DNS requests to the appropriate resources.  In this case, it will be EC2 instances.  This helps distribute traffic and improve the availability and performance of the applications.  Route 53 can monitor the health of your resources and automatically route traffic away from failed resources to healthy ones. This is crucial for ensuring high availability and fault tolerance.  Route 53 can be used to create sophisticated traffic routing policies based on geographic location, latency, weighted distribution, and more. This enables you to optimize the user experience and control how traffic is distributed.
-
-How to configure Amazon DNS Service [Route 53](https://github.com/LamAnnieV/AWS_Services/blob/main/route_53.md)
-
-![Images](Images/dns_name.png)
-
-![Images](Images/dns_result.png)
 
 ## Issue(s)
 
-Most of the challenges revolved around Terraform, not having enough AWS resources and user error
 
-1.  When updating the database endpoint in the files, had to try two different options to figure out which one was the actual database name DB instance identifier or initial database name.  It was the initial database name.  
-2. When configuring the RDS, port 3306 was initially not configured, which caused an unsuccessful test stage 
-3.  How to create a two-region infrastructure with one main.tf.  It was simply giving an alias to the second provider, and inserting the provider = aws.<alias> for each block related to that provider.  The other blocks will default to the main provider. 
-4.  Terraform was giving an error that there was not enough CPU or internet gateways available.  Had to terminate unused resources, before re-running Terraform
-6.  When configuring the application load balancer, selecting the correct VPC was missed.  Had to recreate the load balancer 
   
 ## Area(s) for Optimization:
 
 -  Enhance automation of the AWS Cloud Infrastructure by implementing Terraform modules.
 -  Using Auto Scaling Groups in conjunction with the ALB for dynamic scaling based on traffic load.
--  Use Dockerfiles to deploy the application
+
 
 
 Note:  ChatGPT was used to enhance the quality and clarity of this documentation
