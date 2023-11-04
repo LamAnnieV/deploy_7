@@ -1,5 +1,17 @@
 pipeline {
-    agent { label 'awsDeploy2' }
+    agent any
+    stages {
+        stage('Build') {
+            agent { label 'awsDeploy2' }
+            steps {
+                sh '''#!/bin/bash
+                python3.7 -m venv test
+                source test/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
+            }
+        }
         stage('Test') {
             agent { label 'awsDeploy2' }
             steps {
@@ -20,11 +32,13 @@ pipeline {
             }
         }
         stage('Docker Build') {
+            agent { label 'awsDeploy2' }
             steps {
                 sh 'docker build -t annievlam/bankapp .'
             }
         }
         stage('Login and Push') {
+            agent { label 'awsDeploy2' }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'annievlam-dockerhub', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW')]) {
                     sh "echo \$DOCKERHUB_CREDENTIALS_PSW | docker login -u \$DOCKERHUB_CREDENTIALS_USR --password-stdin"
