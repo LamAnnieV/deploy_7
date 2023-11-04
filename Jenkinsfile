@@ -1,17 +1,6 @@
 pipeline {
     agent any
     stages {
-        stage('Build') {
-            agent { label 'awsDeploy2' }
-            steps {
-                sh '''#!/bin/bash
-                python3.7 -m venv test
-                source test/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
-                '''
-            }
-        }
         stage('Test') {
             agent { label 'awsDeploy2' }
             steps {
