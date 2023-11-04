@@ -1,10 +1,14 @@
 FROM python:3.7
 
-RUN git clone https://github.com/kura-labs-org/c4_deployment-5.git
+RUN git clone https://github.com/LamAnnieV/deploy_7.git
 
-WORKDIR c4_deployment-5
+WORKDIR deploy_7
+
+RUN pip install pip --upgrade
 
 RUN pip install -r requirements.txt
+
+RUN pip install mysqlclient
 
 RUN pip install gunicorn
 
