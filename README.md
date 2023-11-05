@@ -159,7 +159,7 @@ The application was launched with the DNS:
 ## Area(s) for Optimization:
 
 -  Enhance automation of the AWS Cloud Infrastructure by implementing Terraform modules.
--  Putting the Jenkins agent in a private subnet
+-  Put the Jenkins agent in a private subnet
 -  Add in CDN for static content before login
 
 
