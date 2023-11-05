@@ -158,24 +158,15 @@ The application was launched with the DNS:
 
 ## Conclusion
 
-```
-Is your infrastructure secure? if yes or no, why?
 
-The main infrastructure is secure since all three layers of the application are in the private subnet.  However, the Docker agent instance and the Terraform agent instance is not secure.  If those two instances are hacked, it can take our application offline or destroy our main infrastructure.  
-```
+Is your infrastructure secure? if yes or no, why?  The main infrastructure is secure since all three layers of the application are in the private subnet.  However, the Docker agent instance and the Terraform agent instance is not secure.  If those two instances are hacked, it can take our application offline or destroy our main infrastructure.  
 
-```
 What happens when you terminate 1 instance?  The retail banking application is containerized and not running on an instance.  After the application has been deployed, terminating any of the Jenkins-Agent instances should have no effect on the main infrastructure.
-```
-```
-Is this infrastructure fault-tolerant?
-Yes has a certain level of fault tolerance.  There is logging put in place to monitor the health of the banking application.  If one container is down, the ECS will spin up another container.  However, since all subnets are in the same region.  If there is a natural disaster in the region, it might bring down the whole infrastructure.  
 
-```
 
-```
+Is this infrastructure fault-tolerant? Yes has a certain level of fault tolerance.  There is logging put in place to monitor the health of the banking application.  If one container is down, the ECS will spin up another container.  However, since all subnets are in the same region.  If there is a natural disaster in the region, it might bring down the whole infrastructure.  
+
 Which subnet were the containers deployed in?  containers live in and deployed in the private subnet located in us-east-1a and us-east-1b.  Please refer to step #5, Application Load Balancer (ALB) section for more info on ingress and egress traffic.
-```
 
 ## Area(s) for Optimization:
 
