@@ -58,9 +58,9 @@ Terraform is a tool that helps you create and manage your infrastructure. It all
 
 Use Terraform to spin up the [Jenkins Agent Infrastructure](jenkinsTerraform/main.tf) to include the installs needed for the [Jenkins instance](jenkinsTerraform/installs1.sh), the install needed for the [Jenkins Docker agent instance](jenkinsTerraform/installs2.sh), and the install needed for the [Jenkins Terraform agent instance](jenkinsTerraform/installs3.sh).
 
-### Use Jenkins Terraform Agent to execute the Terraform scripts to create the Banking Application Infrastructure and Deploy the application on ECS with Application Load Balancer
+**Use Jenkins Terraform Agent to execute the Terraform scripts to create the Banking Application Infrastructure and Deploy the application on ECS with Application Load Balancer**
 
-**Banking Application Infrastructure**
+#### Banking Application Infrastructure
 
 Create the following [banking application infrastructure](intTerraform/vpc.tf):  
 
@@ -76,7 +76,7 @@ Create the following [banking application infrastructure](intTerraform/vpc.tf):
 1 Security Group with port 8000
 ```
 
-**Elastic Container Service (ECS)**
+#### Elastic Container Service (ECS)
 
 Amazon Elastic Container Service (ECS) is a managed container orchestration service.  It is designed to simplify the deployment, management, and scaling of containerized applications using containers. The primary purpose of ECS with Docker images is to make it easier to run and manage containers in a scalable and reliable manner.
 
@@ -85,13 +85,13 @@ AWS Fargate is a technology that you can use with Amazon ECS to run containers w
 Create the following resource group for [Elastic Container Service](intTerraform/main.tf):  
 
 ```
-aws_ecs_cluster
+aws_ecs_cluster - for grouping of tasks or services
 aws_cloudwatch_log_group
-aws_ecs_task_definition
-aws_ecs_service
+aws_ecs_task_definition - describes the container
+aws_ecs_service - is a fully managed opinionated container orchestration service that delivers the easiest way for organizations to build, deploy, and manage containerized applications at any scale on AWS
 ```
 
-**Application Load Balancer (ALB)**
+#### Application Load Balancer (ALB)
 
 The purpose of an Application Load Balancer (ALB) is to evenly distribute incoming web traffic to multiple servers or instances to ensure that the application remains available, responsive, and efficient. It directs traffic to different servers to prevent overload on any single server. If one server is down, it can redirect traffic to the servers that are still up and running.  This helps improve the performance, availability, and reliability of web applications, making sure users can access them without interruption, even if some servers have issues.
 
@@ -104,10 +104,9 @@ From https://docs.aws.amazon.com/prescriptive-guidance/latest/load-balancer-stic
 Create the following [Application Load Balancer](intTerraform/ALB.tf):  
 
 ```
-aws_lb_target_group
-Load Balancer Target Group which depends on the Application Load Balancer with port 8000
-aws_alb" "bank_app
-aws_alb_listener
+aws_lb_target_group - defines the target group
+aws_alb" "bank_app - load balancer
+aws_alb_listener - what port is the application load balancer listening on
 
 ```
 
