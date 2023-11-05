@@ -28,7 +28,7 @@ In order for the EC2 instance, where Jenkins is installed, to access the reposit
 
 Update files in the GitHub repository using [git](Images/git.md)
 
-## Step #2 Configure Amazon's Relational Database Service (RDS) 
+## Step #2 Amazon's Relational Database Service (RDS) 
 
 RDS is used to manage the MySQL database in all four instances in this case.  It can automate backups and sync the data across regions, availability zones, and instances.  It also ensures security and reliability
 
@@ -43,15 +43,14 @@ Update the section in yellow, green, and blue of the Database endpoint in the fo
 ![Images](Images/DB_name.png)
 
 
-## Step #4 Dockerfile
+## Step #4 Docker
 
 A Docker image is a template of an application with all the dependencies it needs to run. A docker file has all the components to build the Docker image.
 
 For this deployment, we need to create a [dockerfile](dockerfile) to build the image of the banking application.  Please see the [GIT - docker file](Images/git.md) section to see how to test the dockerfile to see if it can build the image and if the image is deployable.
 
 
-
-## Step #5 Use Terraform to create the Jenkins-Agent Infrastructure and the Banking Application Infrastructure
+## Step #5 Terraform
 
 Terraform is a tool that helps you create and manage your infrastructure. It allows you to define the desired state of your infrastructure in a configuration file, and then Terraform takes care of provisioning and managing the resources to match that configuration. This makes it easier to automate and scale your infrastructure and ensures that it remains consistent and predictable.
 
@@ -81,6 +80,8 @@ Create the following [banking application infrastructure](intTerraform/vpc.tf):
 
 Amazon Elastic Container Service (ECS) is a managed container orchestration service.  It is designed to simplify the deployment, management, and scaling of containerized applications using containers. The primary purpose of ECS with Docker images is to make it easier to run and manage containers in a scalable and reliable manner.
 
+AWS Fargate is a technology that you can use with Amazon ECS to run containers without having to manage servers or clusters of Amazon EC2 instances. With Fargate, you no longer have to provision, configure, or scale clusters of virtual machines to run containers.
+
 Create the following resource group for [Elastic Container Service](intTerraform/main.tf):  
 
 ```
@@ -93,6 +94,12 @@ aws_ecs_service
 **Application Load Balancer (ALB)**
 
 The purpose of an Application Load Balancer (ALB) is to evenly distribute incoming web traffic to multiple servers or instances to ensure that the application remains available, responsive, and efficient. It directs traffic to different servers to prevent overload on any single server. If one server is down, it can redirect traffic to the servers that are still up and running.  This helps improve the performance, availability, and reliability of web applications, making sure users can access them without interruption, even if some servers have issues.
+
+From https://docs.aws.amazon.com/prescriptive-guidance/latest/load-balancer-stickiness/subnets-routing.html:
+
+![Image](Images/aws_load_balancer_traffic.png)
+
+![Image](Images/aws_load_balancer_route_description.png)
 
 Create the following [Application Load Balancer](intTerraform/ALB.tf):  
 
@@ -127,9 +134,6 @@ Instructions on how to install the [Pipleline Keep Running Step](https://github.
 Instructions on how to install the [Docker Pipeline](https://github.com/LamAnnieV/Jenkins/blob/main/Install_Docker_Pipeline_Plugin.md)
 
 
-
-
-
 ## Step #7 Use Jenkins Terraform Agent to execute the Terraform scripts to create the Banking Application Infrastructure and Deploy the application on ECS with Application Load Balancer
 
 Jenkins Build:  In Jenkins create a build "deploy_7" to run the file Jenkinsfilev for the Banking application from GitHub Repository [https://github.com/LamAnnieV/deploy_7.git](https://github.com/LamAnnieV/deploy_7.git) and run the build.  This build consists of the "Test", the "Docker Build", "Login and Push", (Terraform) "Init", (Terraform) "Plan", and (Terraform) "Apply" stages.  
@@ -144,17 +148,15 @@ The application was launched from all four instances:
 
 ![Images](Images/Launched_website.png)
 
-
-
 ## Issue(s)
 
+1.  Had issues with the data already loaded, so removed RUN python load_data.py from the dockerfile
+2.  Had issues with performance and did not pass the 1st stage of the Jenkins build, consolidated defining the Docker Hub credentials variable, logging into dockers and pushing the image to Docker Hub into one stage
 
-  
+
 ## Area(s) for Optimization:
 
 -  Enhance automation of the AWS Cloud Infrastructure by implementing Terraform modules.
--  Using Auto Scaling Groups in conjunction with the ALB for dynamic scaling based on traffic load.
-
 
 
 Note:  ChatGPT was used to enhance the quality and clarity of this documentation
