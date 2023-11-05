@@ -14,6 +14,8 @@ Previously, Jenkins agent infrastructure was used to apply Terraform .tf files t
 
 ![Deployment Diagram](Images/Deployment_Pipeline.png)
 
+https://docs.aws.amazon.com/prescriptive-guidance/latest/load-balancer-stickiness/subnets-routing.html
+
 ## Step #2 GitHub/Git
 
 **Setup GitHub Repository for Jenkins Integration:**
@@ -92,17 +94,6 @@ aws_ecs_service
 
 The purpose of an Application Load Balancer (ALB) is to evenly distribute incoming web traffic to multiple servers or instances to ensure that the application remains available, responsive, and efficient. It directs traffic to different servers to prevent overload on any single server. If one server is down, it can redirect traffic to the servers that are still up and running.  This helps improve the performance, availability, and reliability of web applications, making sure users can access them without interruption, even if some servers have issues.
 
-
-
-
-Security Groups and Network ACLs:
-
-Ensure that your target instances in the private subnets have appropriate security group rules to allow traffic from the ALB.
-Configure network ACLs in your VPC to allow traffic from the ALB's subnets to the private subnets if necessary.
-Routing:
-
-ALB routes incoming traffic to the instances in the private subnets based on the rules and conditions you've defined in your target groups.
-
 Create the following [Application Load Balancer](intTerraform/ALB.tf):  
 
 ```
@@ -112,10 +103,6 @@ aws_alb" "bank_app
 aws_alb_listener
 
 ```
-
-
-
-
 
 ## Step #6 Jenkins
 
