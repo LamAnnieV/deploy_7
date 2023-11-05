@@ -139,11 +139,11 @@ Jenkins Build:  In Jenkins create a build "deploy_7" to run the file Jenkinsfile
 
 **Results:**
 
-Success Build for all Stages
+Success Build for all Stages after resolving the issue listed in the Issues section:
 
 ![Image](Images/Jenkins.png)
 
-The application was launched from all four instances:
+The application was launched with the DNS:
 
 ![Images](Images/Launched_website.png)
 
