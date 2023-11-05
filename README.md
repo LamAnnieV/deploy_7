@@ -152,11 +152,16 @@ The application was launched from all four instances:
 
 1.  Had issues with the data already loaded, so removed RUN python load_data.py from the dockerfile
 2.  Had issues with performance and did not pass the 1st stage of the Jenkins build, consolidated defining the Docker Hub credentials variable, logging into dockers and pushing the image to Docker Hub into one stage
-
+     Debugging process: Ran sudo usermod -aG docker and sudo chmod 777 /var/run/docker.sock after installation and was still stuck in the first stage
+      Since the first action item of the Jenkinsfile is to establish environmental variables for Docker, it is highly likely that might be an issue.  Based on Deployment 6, where Jenkins was able to log into Terraform using "withCredentials and having the login and the action item in one stage, tested to see if that would work with Docker.  Tested and was able to pass all stages of the Build.
+    
+![Image](Images/docker_login_and_push.png)
 
 ## Area(s) for Optimization:
 
 -  Enhance automation of the AWS Cloud Infrastructure by implementing Terraform modules.
+-  Putting the Jenkins agent in a private subnet
+-  Add in CDN for static content before login
 
 
 Note:  ChatGPT was used to enhance the quality and clarity of this documentation
